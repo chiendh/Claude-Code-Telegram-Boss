@@ -17,23 +17,23 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     user = update.effective_user
 
     welcome_message = (
-        f"👋 Welcome to Claude Code Telegram Bot, {user.first_name}!\n\n"
-        f"🤖 I help you access Claude Code remotely through Telegram.\n\n"
-        f"**Available Commands:**\n"
-        f"• `/help` - Show detailed help\n"
-        f"• `/new` - Start a new Claude session\n"
-        f"• `/ls` - List files in current directory\n"
-        f"• `/cd <dir>` - Change directory\n"
-        f"• `/projects` - Show available projects\n"
-        f"• `/status` - Show session status\n"
-        f"• `/actions` - Show quick actions\n"
-        f"• `/git` - Git repository commands\n\n"
-        f"**Quick Start:**\n"
-        f"1. Use `/projects` to see available projects\n"
-        f"2. Use `/cd <project>` to navigate to a project\n"
-        f"3. Send any message to start coding with Claude!\n\n"
-        f"🔒 Your access is secured and all actions are logged.\n"
-        f"📊 Use `/status` to check your usage limits."
+        f"👋 Chào đồng chí Vibecoder, {user.first_name}!\n\n"
+        f"🤖 Tui là trợ lý Claude Code, sẵn sàng phục vụ các đại ca code xuyên đêm.\n\n"
+        f"**Menu món ngon:**\n"
+        f"• `/help` - Bí kíp võ công\n"
+        f"• `/new` - Mở sòng code mới\n"
+        f"• `/ls` - Soi hàng trong thư mục\n"
+        f"• `/cd <dir>` - Nhảy dù sang chỗ khác\n"
+        f"• `/projects` - Danh sách kèo thơm (projects)\n"
+        f"• `/status` - Check tình trạng sức khỏe\n"
+        f"• `/actions` - Tuyệt chiêu nhanh\n"
+        f"• `/git` - Quản lý kho hàng (Git)\n\n"
+        f"**Nhập môn nhanh:**\n"
+        f"1. Gõ `/projects` để chọn kèo\n"
+        f"2. Gõ `/cd <project>` để chui vào dự án\n"
+        f"3. Chat bất kỳ để sai vặt tui!\n\n"
+        f"🔒 Yên tâm, hàng họ bảo mật 100%.\n"
+        f"📊 Gõ `/status` để xem tốn bao nhiêu lúa rồi."
     )
 
     # Add quick action buttons
@@ -66,40 +66,31 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle /help command."""
     help_text = (
-        "🤖 **Claude Code Telegram Bot Help**\n\n"
-        "**Navigation Commands:**\n"
-        "• `/ls` - List files and directories\n"
-        "• `/cd <directory>` - Change to directory\n"
-        "• `/pwd` - Show current directory\n"
-        "• `/projects` - Show available projects\n\n"
-        "**Session Commands:**\n"
-        "• `/new` - Start new Claude session\n"
-        "• `/continue [message]` - Continue last session (optionally with message)\n"
-        "• `/end` - End current session\n"
-        "• `/status` - Show session and usage status\n"
-        "• `/export` - Export session history\n"
-        "• `/actions` - Show context-aware quick actions\n"
-        "• `/git` - Git repository information\n\n"
-        "**Usage Examples:**\n"
-        "• `cd myproject` - Enter project directory\n"
-        "• `ls` - See what's in current directory\n"
-        "• `Create a simple Python script` - Ask Claude to code\n"
-        "• Send a file to have Claude review it\n\n"
-        "**File Operations:**\n"
-        "• Send text files (.py, .js, .md, etc.) for review\n"
-        "• Claude can read, modify, and create files\n"
-        "• All file operations are within your approved directory\n\n"
-        "**Security Features:**\n"
-        "• 🔒 Path traversal protection\n"
-        "• ⏱️ Rate limiting to prevent abuse\n"
-        "• 📊 Usage tracking and limits\n"
-        "• 🛡️ Input validation and sanitization\n\n"
-        "**Tips:**\n"
-        "• Use specific, clear requests for best results\n"
-        "• Check `/status` to monitor your usage\n"
-        "• Use quick action buttons when available\n"
-        "• File uploads are automatically processed by Claude\n\n"
-        "Need more help? Contact your administrator."
+        "🤖 **Bí Kíp Claude Code Vibecoder**\n\n"
+        "**Lệnh Di Chuyển:**\n"
+        "• `/ls` - Xem có gì vui (List files)\n"
+        "• `/cd <dir>` - Nhảy map (Change directory)\n"
+        "• `/pwd` - Đang ở cái xó nào?\n"
+        "• `/projects` - List kèo (Show projects)\n\n"
+        "**Lệnh Phiên Làm Việc:**\n"
+        "• `/new` - Mở phiên mới (Reset não)\n"
+        "• `/continue [msg]` - Code tiếp đi em (kèm lời nhắn)\n"
+        "• `/end` - Thôi nghỉ, đóng phiên\n"
+        "• `/status` - Check ví tiền & status\n"
+        "• `/export` - Xuất khẩu thành phẩm\n"
+        "• `/actions` - Túi thần kỳ (Quick actions)\n"
+        "• `/git` - Check hàng Git\n\n"
+        "**Ví dụ thị phạm:**\n"
+        "• `cd du_an_trieu_do` - Vào folder dự án\n"
+        "• `ls` - Xem hàng họ\n"
+        "• `Viết hộ cái script python đào vàng` - Ra lệnh cho đệ\n"
+        "• Gửi file lên để đệ review code thối\n\n"
+        "**Mẹo nhỏ:**\n"
+        "• Nói rõ ràng, đừng úp mở, đệ mới hiểu\n"
+        "• Check `/status` thường xuyên kẻo cháy túi\n"
+        "• Dùng nút bấm cho lẹ tay\n"
+        "• Gửi file zip/ảnh thoải mái, đệ cân tất\n\n"
+        "Cần support thì ới admin (chắc là chính bạn)."
     )
 
     await update.message.reply_text(help_text, parse_mode="Markdown")
@@ -141,9 +132,9 @@ async def new_session(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     await update.message.reply_text(
-        f"🆕 **New Claude Code Session**\n\n"
-        f"📂 Working directory: `{relative_path}/`\n\n"
-        f"Ready to help you code! Send me a message to get started, or use the buttons below:",
+        f"🆕 **Mở Bát Phiên Mới**\n\n"
+        f"📂 Đang cắm trại tại: `{relative_path}/`\n\n"
+        f"Sẵn sàng nhận lệnh! Chat gì đi đại ca, hoặc bấm nút dưới cho nhanh:",
         parse_mode="Markdown",
         reply_markup=reply_markup,
     )
@@ -394,14 +385,14 @@ async def change_directory(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     # Parse arguments
     if not context.args:
         await update.message.reply_text(
-            "**Usage:** `/cd <directory>`\n\n"
-            "**Examples:**\n"
-            "• `/cd myproject` - Enter subdirectory\n"
-            "• `/cd ..` - Go up one level\n"
-            "• `/cd /` - Go to root of approved directory\n\n"
-            "**Tips:**\n"
-            "• Use `/ls` to see available directories\n"
-            "• Use `/projects` to see all projects",
+            "**Cách xài:** `/cd <directory>`\n\n"
+            "**Ví dụ:**\n"
+            "• `/cd du_an_xyz` - Chui vào thư mục con\n"
+            "• `/cd ..` - Leo lên một tầng\n"
+            "• `/cd /` - Về nhà (root)\n\n"
+            "**Mẹo:**\n"
+            "• Dùng `/ls` để xem có cửa nào vào được\n"
+            "• Dùng `/projects` để xem danh sách địa bàn",
             parse_mode="Markdown",
         )
         return
@@ -464,9 +455,9 @@ async def change_directory(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         # Send confirmation
         relative_path = resolved_path.relative_to(settings.approved_directory)
         await update.message.reply_text(
-            f"✅ **Directory Changed**\n\n"
-            f"📂 Current directory: `{relative_path}/`\n\n"
-            f"🔄 Claude session cleared. Send a message to start coding in this directory.",
+            f"✅ **Đã nhảy dù thành công**\n\n"
+            f"📂 Địa bàn hiện tại: `{relative_path}/`\n\n"
+            f"🔄 Session cũ đã clear. Chat gì đó để code tiếp tại đây nào.",
             parse_mode="Markdown",
         )
 
@@ -528,9 +519,9 @@ async def show_projects(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
         if not projects:
             await update.message.reply_text(
-                "📁 **No Projects Found**\n\n"
-                "No subdirectories found in your approved directory.\n"
-                "Create some directories to organize your projects!"
+                "📁 **Chả thấy dự án nào cả**\n\n"
+                "Thư mục này trống trơn à?\n"
+                "Tạo vài folder dự án đi rồi quay lại nhé!"
             )
             return
 
@@ -563,9 +554,9 @@ async def show_projects(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         project_list = "\n".join([f"• `{project}/`" for project in projects])
 
         await update.message.reply_text(
-            f"📁 **Available Projects**\n\n"
+            f"📁 **Danh Sách Kèo Thơm (Projects)**\n\n"
             f"{project_list}\n\n"
-            f"Click a project below to navigate to it:",
+            f"Bấm vào tên dự án bên dưới để nhảy vào làm việc:",
             parse_mode="Markdown",
             reply_markup=reply_markup,
         )
@@ -604,12 +595,12 @@ async def session_status(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
     # Format status message
     status_lines = [
-        "📊 **Session Status**",
+        "📊 **Tình Trạng Sức Khỏe**",
         "",
-        f"📂 Directory: `{relative_path}/`",
-        f"🤖 Claude Session: {'✅ Active' if claude_session_id else '❌ None'}",
+        f"📂 Đang ở: `{relative_path}/`",
+        f"🤖 Claude Session: {'✅ Đang chiến' if claude_session_id else '❌ Đang ngủ'}",
         usage_info.rstrip(),
-        f"🕐 Last Update: {update.message.date.strftime('%H:%M:%S UTC')}",
+        f"🕐 Cập nhật lúc: {update.message.date.strftime('%H:%M:%S UTC')}",
     ]
 
     if claude_session_id:
