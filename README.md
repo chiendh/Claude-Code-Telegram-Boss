@@ -26,7 +26,7 @@
 
 </div>
 
-<img src="docs/ScreenShot.jpeg" alt="Claude Code Telegram Boss" width="600"/>
+![Claude Code Telegram Boss](docs/ScreenShot.jpeg)
 
 ---
 
