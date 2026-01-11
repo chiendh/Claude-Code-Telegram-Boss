@@ -82,8 +82,12 @@ async def auth_middleware(handler: Callable, event: Any, data: Dict[str, Any]) -
             auth_provider=session.auth_provider if session else None,
         )
 
-        # Welcome message for new session
-        if event.effective_message:
+        # Welcome message for new session - but NOT for callback queries
+        # Callback queries are button presses, not new text messages
+        from telegram import CallbackQuery
+        is_callback = isinstance(event, CallbackQuery)
+
+        if event.effective_message and not is_callback:
             await event.effective_message.reply_text(
                 f"🔓 Welcome! You are now authenticated.\n"
                 f"Session started at {datetime.utcnow().strftime('%H:%M:%S UTC')}"

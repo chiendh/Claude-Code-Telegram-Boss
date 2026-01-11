@@ -1,84 +1,211 @@
-![Vibecoder Dashboard](docs/ScreenShot.jpeg)
+<div align="center">
 
-# Claude Code Telegram Boss - Vibecoder Edition 😎
+# 🤖 Claude Code Telegram Boss
 
-> **Cảnh báo:** Bot này không dành cho người nghiêm túc. Chỉ dành cho các "Vibecoder" hệ tư tưởng Code Đêm.
+**Control Claude Code CLI remotely via Telegram**
 
-## 🤖 Nó là cái gì?
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Telegram Bot API](https://img.shields.io/badge/Telegram-Bot%20API-2CA5E0.svg)](https://core.telegram.org/bots/api)
+[![Claude Code](https://img.shields.io/badge/Claude-Code%20CLI-orange.svg)](https://www.anthropic.com/)
 
-Đây là con hàng giúp bạn **điều khiển Claude Code CLI** từ xa qua Telegram.
-Tưởng tượng bạn đang nằm ườn trên giường lướt điện thoại, nhưng sếp gọi bảo "fix bug gấp". Thay vì bật dậy mở laptop, bạn chỉ cần chat với con bot này.
+<img src="docs/ScreenShot.jpeg" alt="Claude Code Telegram Boss" width="600"/>
 
-Nó biến Telegram của bạn thành cái Terminal xịn xò, có sẵn "thư ký chân dài" Claude Code trực chiến 24/7.
+*Turn your Telegram into a powerful remote coding terminal with Claude AI*
 
-## 🚀 Tính Năng Bá Đạo
+[Installation](#-installation) •
+[Features](#-features) •
+[Usage](#-usage) •
+[Configuration](#️-configuration) •
+[Security](#-security)
 
-*   **Chat như người thật**: Claude nhớ hết lịch sử chat, không như mấy con bot "cá vàng".
-*   **Terminal bỏ túi**: `/ls`, `/cd` như hacker lỏ.
-*   **Bảo mật tận răng**:
-    *   Chỉ mình bạn (hoặc hội anh em được duyệt) mới chat được.
-    *   Sandbox thư mục an toàn, không lo Claude táy máy xóa nhầm `System32`.
-*   **Git Pro Vip**: Check branch, diff code ngay trên Telegram.
-*   **Nút bấm tiện lợi**: UI/UX "cơm bưng nước rót", không cần gõ lệnh nhiều đau tay.
+</div>
 
-## 🛠 Cài Đặt Nhanh Gọn
+---
 
-### 1. Chuẩn bị đồ nghề
-*   Python 3.10 trở lên (càng mới càng tốt).
-*   Đã cài `claude` CLI và login (`npm i -g @anthropic-ai/claude-code`).
-*   Một con bot Telegram (xin @BotFather).
+## ✨ Features
 
-### 2. Kéo code về
+| Feature | Description |
+|---------|-------------|
+| 🧠 **Persistent Sessions** | Conversations maintain context across messages |
+| 📁 **File Navigation** | Browse directories with `/ls`, `/cd`, `/pwd` commands |
+| 🔧 **Tool Integration** | Full access to Claude Code's toolkit (Read, Write, Bash, etc.) |
+| 💬 **Interactive Q&A** | Inline buttons for quick responses to Claude's questions |
+| 📊 **Real-time Progress** | See tool execution status with detailed previews |
+| 🔐 **Enterprise Security** | User whitelist, path sandboxing, rate limiting |
+| 📱 **Mobile-First** | Designed for on-the-go coding from your phone |
+
+## 🚀 Installation
+
+### Prerequisites
+
+- **Python 3.10+** 
+- **Claude Code CLI** installed and authenticated:
+  ```bash
+  npm install -g @anthropic-ai/claude-code
+  claude login
+  ```
+- **Telegram Bot Token** from [@BotFather](https://t.me/BotFather)
+
+### Quick Start
+
 ```bash
+# Clone the repository
 git clone https://github.com/0xAstroAlpha/Claude-Code-Telegram-Boss.git
 cd Claude-Code-Telegram-Boss
-```
 
-### 3. Cài đặt & Cấu hình
-```bash
-# Cài dependencies
+# Install dependencies
 pip install poetry
 poetry install
 
-# Cấu hình biến môi trường
+# Configure environment
 cp .env.example .env
-nano .env
-```
-*Sửa file `.env` điền Token Bot và ID Telegram của bạn vào.*
+# Edit .env with your settings
 
-### 4. Chạy thôi
-```bash
-# Chạy thẳng
+# Start the bot
 ./start_bot.sh
+```
 
-# Hoặc cài chạy ngầm vĩnh viễn (macOS)
+### Persistent Background Service (macOS)
+
+```bash
+# Copy LaunchAgent
 cp com.vibecode.claude-bot.plist ~/Library/LaunchAgents/
+
+# Load and start
 launchctl load ~/Library/LaunchAgents/com.vibecode.claude-bot.plist
 launchctl start com.vibecode.claude-bot
 ```
 
-## 🎮 Cách Dùng Cho Pro
+## 📖 Usage
 
-Gõ `/start` để bot chào đón bạn nồng nhiệt.
+### Commands
 
-| Lệnh | Tác dụng |
-| :--- | :--- |
-| `/new` | Reset não cho Claude, bắt đầu phiên mới |
-| `/ls` | Soi xem trong thư mục có gì |
-| `/cd <tên>` | Chui vào thư mục (ví dụ `/cd du_an_trieu_do`) |
-| `/projects` | Liệt kê các kèo thơm đang có |
-| `/status` | Xem Claude còn sống không, hay hết tiền API |
-| `/git` | Ra lệnh cho git |
+| Command | Description |
+|---------|-------------|
+| `/start` | Initialize bot and show welcome message |
+| `/help` | Display available commands |
+| `/new` | Start a fresh Claude session |
+| `/continue` | Resume previous session |
+| `/ls` | List files in current directory |
+| `/cd <dir>` | Change working directory |
+| `/pwd` | Show current directory |
+| `/projects` | Browse available projects |
+| `/status` | Check session status and usage |
+| `/git` | Git integration menu |
 
-**Mẹo nhỏ:**
-*   Cứ chat tự nhiên: *"Ê Claude, viết cho tao cái script Python đào coin."*
-*   Gửi file ảnh, file log lỗi vào chat, nó đọc được hết.
+### Natural Language
 
-## ⚙️ Cấu Hình Bí Mật (.env)
+Simply chat with Claude naturally:
 
-*   `ALLOWED_USERS`: ID của bạn (lấy từ @userinfobot). Đừng để trống kẻo cả làng vào dùng chùa.
-*   `APPROVED_DIRECTORY`: Thư mục gốc chứa code. Claude chỉ được phép loanh quanh trong này thôi.
-*   `CLAUDE_ALLOWED_TOOLS`: Các quyền bạn cấp cho Claude (đọc, ghi file, chạy lệnh bash...).
+```
+You: Create a Python FastAPI server with user authentication
+Claude: I'll create that for you...
+
+You: Add rate limiting to the endpoints
+Claude: Done! I've added rate limiting using slowapi...
+```
+
+### File Uploads
+
+Send code files or images directly to chat for:
+- Code review
+- Bug analysis
+- Screenshot interpretation
+- Documentation extraction
+
+## ⚙️ Configuration
+
+### Required Environment Variables
+
+```env
+# Telegram Configuration
+TELEGRAM_BOT_TOKEN=your_bot_token_here
+ALLOWED_USERS=["123456789"]  # Your Telegram user ID
+
+# Working Directory
+APPROVED_DIRECTORY=/path/to/your/projects
+```
+
+### Optional Settings
+
+```env
+# Security Options
+TRUST_CLAUDE_COMPLETELY=false     # Bypass all validation
+DISABLE_PATH_VALIDATION=false     # Allow access outside sandbox
+DISABLE_DANGEROUS_PATTERN_CHECK=false  # Allow shell patterns
+
+# Rate Limiting
+RATE_LIMIT_REQUESTS=10
+RATE_LIMIT_WINDOW_SECONDS=60
+
+# Claude Tools
+CLAUDE_ALLOWED_TOOLS=["Read", "Write", "Edit", "Bash", "Glob", "Grep", "LS"]
+```
+
+## 🔐 Security
+
+### Multi-Layer Protection
+
+1. **User Whitelist** - Only authorized Telegram users can interact
+2. **Path Sandboxing** - Claude can only access approved directories
+3. **Tool Validation** - Each tool call is validated before execution
+4. **Rate Limiting** - Prevents abuse and controls costs
+5. **Audit Logging** - All actions are logged for review
+
+### Trust Modes
+
+| Mode | Security Level | Use Case |
+|------|---------------|----------|
+| Default | 🔒 Maximum | Production environments |
+| `DISABLE_PATH_VALIDATION=true` | ⚠️ Medium | Development with trusted users |
+| `TRUST_CLAUDE_COMPLETELY=true` | 🔓 Minimal | Personal use only |
+
+## 🏗️ Architecture
+
+```
+claude-code-telegram-boss/
+├── src/
+│   ├── bot/              # Telegram bot handlers
+│   │   ├── handlers/     # Command & message handlers
+│   │   ├── features/     # Optional features
+│   │   └── utils/        # Formatting & utilities
+│   ├── claude/           # Claude integration
+│   │   ├── facade.py     # Main integration layer
+│   │   ├── monitor.py    # Tool validation
+│   │   └── session.py    # Session management
+│   ├── config/           # Configuration
+│   └── security/         # Auth, rate limiting, validators
+├── data/                 # SQLite database
+└── docs/                 # Documentation
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [Anthropic](https://www.anthropic.com/) for Claude AI
+- [python-telegram-bot](https://python-telegram-bot.org/) for the excellent Telegram library
+- [RichardAtCT/claude-code-telegram](https://github.com/RichardAtCT/claude-code-telegram) for inspiration
 
 ---
-*Made with ❤️ & ☕ by a Vibecoder*
+
+<div align="center">
+
+**[⬆ Back to Top](#-claude-code-telegram-boss)**
+
+Made with ❤️ by the Vibecoder community
+
+</div>

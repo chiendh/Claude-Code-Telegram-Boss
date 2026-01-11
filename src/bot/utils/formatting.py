@@ -38,6 +38,10 @@ class ResponseFormatter:
         # Clean and prepare text
         text = self._clean_text(text)
 
+        # Apply syntax highlighting if enabled
+        if getattr(self.settings, "enable_syntax_highlighting", True):
+            text = self._apply_syntax_highlighting(text)
+
         # Check if we need semantic chunking (for complex content)
         if self._should_use_semantic_chunking(text):
             # Use enhanced semantic chunking for complex content
@@ -56,6 +60,51 @@ class ResponseFormatter:
             messages[-1].reply_markup = self._get_contextual_keyboard(context)
 
         return messages if messages else [FormattedMessage("_(No content to display)_")]
+
+    def _apply_syntax_highlighting(self, text: str) -> str:
+        """Apply syntax highlighting to code blocks."""
+        try:
+            from .syntax_highlighter import enhance_code_formatting
+
+            # Enhance with syntax highlighting
+            highlighted = enhance_code_formatting(text, use_pygments=False)
+
+            # Apply additional formatting improvements
+            highlighted = self._enhance_code_blocks(highlighted)
+
+            return highlighted
+        except Exception as e:
+            # Fallback to no highlighting if there's an error
+            import structlog
+
+            logger = structlog.get_logger()
+            logger.warning("Failed to apply syntax highlighting", error=str(e))
+            return text
+
+    def _enhance_code_blocks(self, text: str) -> str:
+        """Add visual enhancements to code blocks.
+
+        - Add language labels
+        - Improve readability
+        - Format headers
+        """
+        import re
+
+        # Find code blocks with language tags
+        pattern = r"```(\w+)\n(.*?)```"
+
+        def enhance_block(match):
+            lang = match.group(1)
+            code = match.group(2)
+
+            # Add header with language
+            lang_display = lang.upper() if lang else "CODE"
+            header = f"━━━ {lang_display} ━━━"
+
+            return f"```{lang}\n{header}\n{code}\n```"
+
+        enhanced = re.sub(pattern, enhance_block, text, flags=re.DOTALL)
+        return enhanced
 
     def _should_use_semantic_chunking(self, text: str) -> bool:
         """Determine if semantic chunking is needed."""

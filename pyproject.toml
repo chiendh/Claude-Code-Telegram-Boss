@@ -1,16 +1,16 @@
 [tool.poetry]
 name = "claude-code-telegram"
-version = "0.1.0"
-description = "Telegram bot for remote Claude Code access with comprehensive configuration management"
-authors = ["Richard Atkinson <richardatk01@gmail.com>"]
+version = "0.2.0"
+description = "Telegram bot for remote Claude Code access with enhanced features"
+authors = ["Brian Le <lhda.eth@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-homepage = "https://github.com/richardatkinson/claude-code-telegram"
-repository = "https://github.com/richardatkinson/claude-code-telegram"
-documentation = "https://github.com/richardatkinson/claude-code-telegram/blob/main/docs/"
+homepage = "https://github.com/yourusername/claude-code-telegram-boss"
+repository = "https://github.com/yourusername/claude-code-telegram-boss"
+documentation = "https://github.com/yourusername/claude-code-telegram-boss/blob/main/docs/"
 keywords = ["telegram", "bot", "claude", "ai", "development", "remote", "coding"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
@@ -35,6 +35,7 @@ aiofiles = "^24.1.0"
 aiosqlite = "^0.21.0"
 anthropic = "^0.40.0"
 claude-code-sdk = "^0.0.11"
+pygments = "^2.17.0"  # For syntax highlighting
 
 [tool.poetry.scripts]
 claude-telegram-bot = "src.main:run"

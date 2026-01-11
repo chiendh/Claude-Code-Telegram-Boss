@@ -16,23 +16,140 @@ from ...security.validators import SecurityValidator
 logger = structlog.get_logger()
 
 
-async def _format_progress_update(update_obj) -> Optional[str]:
+def _get_tool_emoji(tool_name: str) -> str:
+    """Get appropriate emoji for tool type."""
+    tool_emojis = {
+        "Read": "📖",
+        "Write": "✍️",
+        "Edit": "✏️",
+        "Bash": "💻",
+        "Glob": "🔍",
+        "Grep": "🔎",
+        "LS": "📂",
+        "Task": "🎯",
+        "MultiEdit": "📝",
+        "NotebookEdit": "📓",
+        "WebFetch": "🌐",
+        "TodoWrite": "📋",
+        "WebSearch": "🔎",
+    }
+    return tool_emojis.get(tool_name, "🔧")
+
+
+def _format_tool_params(tool_name: str, params: dict) -> str:
+    """Format important parameters for tool preview."""
+    if not params:
+        return ""
+
+    # Different formatting for different tools
+    if tool_name == "Read":
+        file_path = params.get("file_path", "")
+        return f"`{file_path}`"
+
+    elif tool_name in ["Write", "Edit"]:
+        file_path = params.get("file_path", "")
+        content_preview = params.get("content", params.get("new_string", ""))
+        if content_preview:
+            preview = content_preview[:50] + "..." if len(content_preview) > 50 else content_preview
+            return f"`{file_path}` ← {preview}"
+        return f"`{file_path}`"
+
+    elif tool_name == "Bash":
+        command = params.get("command", "")
+        return f"`{command[:60]}...`" if len(command) > 60 else f"`{command}`"
+
+    elif tool_name in ["Glob", "Grep"]:
+        pattern = params.get("pattern", "")
+        path = params.get("path", "")
+        if path:
+            return f"Pattern: `{pattern}` in `{path}`"
+        return f"Pattern: `{pattern}`"
+
+    elif tool_name == "Task":
+        prompt = params.get("prompt", "")
+        subagent_type = params.get("subagent_type", "")
+        if subagent_type:
+            return f"{subagent_type}: {prompt[:40]}..."
+        return prompt[:50] + "..." if len(prompt) > 50 else prompt
+
+    # Default: show first few params
+    preview_params = []
+    for k, v in list(params.items())[:2]:
+        if isinstance(v, str) and len(v) < 30:
+            preview_params.append(f"{k}={v}")
+    return ", ".join(preview_params) if preview_params else ""
+
+
+async def _format_progress_update(update_obj, tracker=None) -> Optional[str]:
     """Format progress updates with enhanced context and visual indicators."""
+    # Tool execution started - show which tools are being called
+    if update_obj.type == "assistant" and update_obj.tool_calls:
+        tool_names = update_obj.get_tool_names()
+        if tool_names:
+            # Format tool calls with parameters preview
+            tool_list = []
+            for i, tool_call in enumerate(update_obj.tool_calls):
+                tool_name = tool_call.get("name", "Unknown")
+                tool_id = tool_call.get("id", "")
+                tool_input = tool_call.get("input", {})
+
+                # Track tool start if tracker available
+                if tracker and tool_id:
+                    session_id = (
+                        update_obj.session_context.get("session_id")
+                        if update_obj.session_context
+                        else "unknown"
+                    )
+                    tracker.start_tool(tool_name, tool_id, tool_input, session_id)
+
+                # Get emoji for tool type
+                tool_emoji = _get_tool_emoji(tool_name)
+
+                # Preview important parameters
+                param_preview = _format_tool_params(tool_name, tool_input)
+
+                if param_preview:
+                    tool_list.append(f"{tool_emoji} **{tool_name}**\n  ↳ {param_preview}")
+                else:
+                    tool_list.append(f"{tool_emoji} **{tool_name}**")
+
+            return f"🔧 **Executing tools:**\n\n" + "\n".join(tool_list)
+
     if update_obj.type == "tool_result":
         # Show tool completion status
-        tool_name = "Unknown"
-        if update_obj.metadata and update_obj.metadata.get("tool_use_id"):
-            # Try to extract tool name from context if available
-            tool_name = update_obj.metadata.get("tool_name", "Tool")
+        tool_id = update_obj.metadata.get("tool_use_id") if update_obj.metadata else None
+        tool_name = "Tool"
+
+        # Try to get tool name from tracker
+        if tracker and tool_id:
+            execution = tracker.get_execution(tool_id)
+            if execution:
+                tool_name = execution.tool_name
+
+                # Mark as completed or failed
+                if update_obj.is_error():
+                    tracker.fail_tool(tool_id, update_obj.get_error_message() or "Unknown error")
+                else:
+                    tracker.complete_tool(tool_id, update_obj.content)
+            else:
+                # Fallback to metadata
+                tool_name = update_obj.metadata.get("tool_name", "Tool")
+        else:
+            # Fallback to metadata
+            if update_obj.metadata:
+                tool_name = update_obj.metadata.get("tool_name", "Tool")
+
+        # Get emoji
+        tool_emoji = _get_tool_emoji(tool_name)
 
         if update_obj.is_error():
-            return f"❌ **{tool_name} failed**\n\n_{update_obj.get_error_message()}_"
+            return f"❌ **{tool_emoji} {tool_name} failed**\n\n_{update_obj.get_error_message()}_"
         else:
             execution_time = ""
             if update_obj.metadata and update_obj.metadata.get("execution_time_ms"):
                 time_ms = update_obj.metadata["execution_time_ms"]
                 execution_time = f" ({time_ms}ms)"
-            return f"✅ **{tool_name} completed**{execution_time}"
+            return f"✅ **{tool_emoji} {tool_name} completed**{execution_time}"
 
     elif update_obj.type == "progress":
         # Handle progress updates
@@ -205,10 +322,15 @@ async def handle_text_message(
         # Get existing session ID
         session_id = context.user_data.get("claude_session_id")
 
+        # Initialize tool tracker for this request
+        from ..features.tool_execution_tracker import ToolExecutionTracker
+
+        tool_tracker = ToolExecutionTracker()
+
         # Enhanced stream updates handler with progress tracking
         async def stream_handler(update_obj):
             try:
-                progress_text = await _format_progress_update(update_obj)
+                progress_text = await _format_progress_update(update_obj, tracker=tool_tracker)
                 if progress_text:
                     await progress_msg.edit_text(progress_text, parse_mode="Markdown")
             except Exception as e:

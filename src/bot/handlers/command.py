@@ -918,3 +918,44 @@ def _format_file_size(size: int) -> str:
             return f"{size:.1f}{unit}" if unit != "B" else f"{size}B"
         size /= 1024
     return f"{size:.1f}TB"
+
+
+async def browse_files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle /browse command to show interactive file browser."""
+    user_id = update.effective_user.id
+    settings: Settings = context.bot_data["settings"]
+
+    # Get current directory
+    current_dir = context.user_data.get(
+        "current_directory", settings.approved_directory
+    )
+
+    try:
+        # Import file browser
+        from ..features.file_browser import FileBrowser
+
+        # Create file browser instance
+        browser = FileBrowser(
+            approved_directory=settings.approved_directory,
+            items_per_page=8,
+        )
+
+        # Create keyboard for current directory
+        keyboard = browser.create_keyboard(current_dir, page=0, show_hidden=False)
+
+        # Format message
+        message = browser.format_directory_message(current_dir, page=0)
+
+        await update.message.reply_text(
+            message, parse_mode="Markdown", reply_markup=keyboard
+        )
+
+        logger.info(
+            "File browser opened",
+            user_id=user_id,
+            directory=str(current_dir.relative_to(settings.approved_directory)),
+        )
+
+    except Exception as e:
+        await update.message.reply_text(f"❌ **File Browser Error**\n\n{str(e)}")
+        logger.error("Error in browse_files command", error=str(e), user_id=user_id)

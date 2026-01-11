@@ -1,7 +1,7 @@
 """Handle inline keyboard callbacks."""
 
 import structlog
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
 from ...claude.facade import ClaudeIntegration
@@ -42,7 +42,16 @@ async def handle_callback_query(
             "git": handle_git_callback,
             "export": handle_export_callback,
             "question_answer": handle_question_answer_callback,
+            "browse": lambda q, p, c: handle_file_browser_callback(q, c),
+            "file_actions": lambda q, p, c: handle_file_browser_callback(q, c),
+            "file_read": lambda q, p, c: handle_file_browser_callback(q, c),
+            "file_copy_path": lambda q, p, c: handle_file_browser_callback(q, c),
         }
+
+        # Handle special cases that don't follow action:param pattern
+        if data == "close" or data == "noop":
+            await handle_file_browser_callback(query, context)
+            return
 
         handler = handlers.get(action)
         if handler:
@@ -997,24 +1006,51 @@ async def handle_git_callback(
             )
 
         elif git_action == "diff":
-            # Show git diff
+            # Show git diff with enhanced rendering
             diff_output = await git_integration.get_diff(current_dir)
 
             if not diff_output.strip():
                 diff_message = "📊 **Git Diff**\n\n_No changes to show._"
             else:
-                # Clean up diff output for Telegram
-                # Remove emoji symbols that interfere with markdown parsing
-                clean_diff = diff_output.replace("➕", "+").replace("➖", "-").replace("📍", "@")
-                
-                # Limit diff output
-                max_length = 2000
-                if len(clean_diff) > max_length:
-                    clean_diff = (
-                        clean_diff[:max_length] + "\n\n_... output truncated ..._"
-                    )
+                # Use DiffRenderer for better formatting
+                from ..utils.diff_renderer import (
+                    DiffRenderer,
+                    format_diff_summary,
+                    truncate_diff,
+                )
 
-                diff_message = f"📊 **Git Diff**\n\n```\n{clean_diff}\n```"
+                renderer = DiffRenderer(max_context_lines=3)
+
+                try:
+                    # Parse and render diff
+                    diff_lines = renderer.parse_unified_diff(diff_output)
+
+                    # Get summary
+                    stats = renderer.summarize_changes(diff_lines)
+                    summary = format_diff_summary(stats)
+
+                    # Render diff
+                    rendered = renderer.render_telegram(diff_lines, collapse_context=True)
+
+                    # Truncate if too long
+                    truncated, was_truncated = truncate_diff(rendered, max_lines=40)
+
+                    diff_message = f"{summary}\n{truncated}"
+
+                    if was_truncated:
+                        diff_message += (
+                            "\n\n💡 _Diff truncated. Use git commands for full output._"
+                        )
+
+                except Exception as e:
+                    logger.warning("Failed to render diff", error=str(e))
+                    # Fallback to simple rendering
+                    max_length = 2000
+                    if len(diff_output) > max_length:
+                        diff_output = (
+                            diff_output[:max_length] + "\n\n_... output truncated ..._"
+                        )
+                    diff_message = f"📊 **Git Diff**\n\n```\n{diff_output}\n```"
 
             keyboard = [
                 [
@@ -1259,3 +1295,112 @@ async def handle_question_answer_callback(
         await query.message.reply_text(
             f"❌ Lỗi khi gửi câu trả lời: {str(e)}"
         )
+
+
+async def handle_file_browser_callback(
+    query: CallbackQuery, context: ContextTypes.DEFAULT_TYPE
+) -> None:
+    """Handle file browser navigation callbacks."""
+    user_id = query.from_user.id
+    settings: Settings = context.bot_data["settings"]
+    data = query.data
+
+    try:
+        from ..features.file_browser import FileBrowser
+
+        browser = FileBrowser(
+            approved_directory=settings.approved_directory, items_per_page=8
+        )
+
+        # Parse callback data: browse:path:page:show_hidden
+        if data.startswith("browse:"):
+            parts = data.split(":", 3)
+            if len(parts) >= 2:
+                from pathlib import Path
+
+                dir_path = Path(parts[1])
+                page = int(parts[2]) if len(parts) > 2 else 0
+                show_hidden = parts[3] == "1" if len(parts) > 3 else False
+
+                # Security: Validate path is within approved directory
+                if not str(dir_path).startswith(str(settings.approved_directory)):
+                    await query.answer("❌ Access denied", show_alert=True)
+                    return
+
+                # Create keyboard and message
+                keyboard = browser.create_keyboard(dir_path, page, show_hidden)
+                message = browser.format_directory_message(dir_path, page)
+
+                await query.edit_message_text(
+                    message, parse_mode="Markdown", reply_markup=keyboard
+                )
+
+                await query.answer()
+
+        # Handle file actions
+        elif data.startswith("file_actions:"):
+            from pathlib import Path
+
+            file_path = Path(data.replace("file_actions:", ""))
+
+            # Security check
+            if not str(file_path).startswith(str(settings.approved_directory)):
+                await query.answer("❌ Access denied", show_alert=True)
+                return
+
+            # Show file info and actions
+            keyboard = browser.create_file_actions_keyboard(file_path)
+            message = browser.format_file_info_message(file_path)
+
+            await query.edit_message_text(
+                message, parse_mode="Markdown", reply_markup=keyboard
+            )
+
+            await query.answer()
+
+        # Handle file operations
+        elif data.startswith("file_read:"):
+            from pathlib import Path
+
+            file_path = Path(data.replace("file_read:", ""))
+
+            # Security check
+            if not str(file_path).startswith(str(settings.approved_directory)):
+                await query.answer("❌ Access denied", show_alert=True)
+                return
+
+            # Read file and send
+            try:
+                content = file_path.read_text()
+                # Truncate if too long
+                if len(content) > 3500:
+                    content = content[:3500] + "\n\n...(truncated)"
+
+                await query.message.reply_text(
+                    f"📖 **{file_path.name}**\n\n```\n{content}\n```",
+                    parse_mode="Markdown",
+                )
+                await query.answer("✅ File read")
+
+            except Exception as e:
+                await query.answer(f"❌ Error reading file: {str(e)}", show_alert=True)
+
+        elif data.startswith("file_copy_path:"):
+            from pathlib import Path
+
+            file_path = Path(data.replace("file_copy_path:", ""))
+            await query.message.reply_text(f"`{file_path}`", parse_mode="Markdown")
+            await query.answer("✅ Path copied")
+
+        elif data == "close":
+            await query.message.delete()
+            await query.answer()
+
+        elif data == "noop":
+            await query.answer()
+
+    except Exception as e:
+        logger.error(
+            "Error handling file browser callback", error=str(e), user_id=user_id
+        )
+        await query.answer(f"❌ Error: {str(e)}", show_alert=True)
