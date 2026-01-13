@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Recently Completed
 
+#### Fix Telegram editMessageText Errors - 2026-01-13
+- **Message Deduplication**: Added `last_progress_text` tracking to prevent "Message is not modified" errors.
+- **Safe Markdown Truncation**: Implemented `_safe_truncate_markdown` helper to fix "Can't parse entities" errors.
+
 #### Storage Layer Implementation (TODO-6) - 2025-06-06
 - **SQLite Database with Complete Schema**:
   - 7 core tables: users, sessions, messages, tool_usage, audit_log, user_tokens, cost_tracking

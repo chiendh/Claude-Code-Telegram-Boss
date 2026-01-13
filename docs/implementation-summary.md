@@ -151,6 +151,7 @@ This document provides a complete implementation roadmap for building a Telegram
 - **42 Python files** implemented across all core modules
 
 ### Recently Completed ✅
+- **Telegram Markdown Fixes**: Message deduplication and safe markdown truncation to fix API errors (2026-01-13)
 - **Claude Code Integration**: Subprocess management, session handling, output parsing, tool monitoring
 - **Storage Layer**: SQLite database, repositories, analytics, persistent sessions (TODO-6)
 

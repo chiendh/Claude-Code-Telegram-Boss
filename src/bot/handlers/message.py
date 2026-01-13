@@ -36,6 +36,43 @@ def _get_tool_emoji(tool_name: str) -> str:
     return tool_emojis.get(tool_name, "🔧")
 
 
+def _safe_truncate_markdown(text: str, max_len: int, add_ellipsis: bool = True) -> str:
+    """Truncate text safely without breaking markdown entities.
+
+    Counts backticks, asterisks, underscores and closes unclosed ones.
+    KISS approach - handles common cases, not nested/complex markdown.
+    """
+    if not text or len(text) <= max_len:
+        return text
+
+    truncated = text[:max_len]
+
+    # Count markdown characters that need pairing
+    backticks = truncated.count('`')
+    # Asterisks (for bold/italic) - handle pairs of ** as single logical entity?
+    # Telegram markdown is tricky. simple *bold* or *italic* (MarkdownV2 uses * for bold, _ for italic)
+    # Actually Telegram MarkdownV2: *bold*, _italic_, __underline__, ~strikethrough~, ||spoiler||, `code`
+    # We should count each type.
+
+    # Simple count check for odd numbers
+    if backticks % 2 != 0:
+        truncated += '`'
+
+    # Check for unclosed *
+    if truncated.count('*') % 2 != 0:
+        truncated += '*'
+
+    # Check for unclosed _
+    if truncated.count('_') % 2 != 0:
+        truncated += '_'
+
+    # Add ellipsis if requested
+    if add_ellipsis:
+        truncated += "..."
+
+    return truncated
+
+
 def _format_tool_params(tool_name: str, params: dict) -> str:
     """Format important parameters for tool preview."""
     if not params:
@@ -50,13 +87,17 @@ def _format_tool_params(tool_name: str, params: dict) -> str:
         file_path = params.get("file_path", "")
         content_preview = params.get("content", params.get("new_string", ""))
         if content_preview:
-            preview = content_preview[:50] + "..." if len(content_preview) > 50 else content_preview
+            preview = _safe_truncate_markdown(content_preview, 50)
             return f"`{file_path}` ← {preview}"
         return f"`{file_path}`"
 
     elif tool_name == "Bash":
         command = params.get("command", "")
-        return f"`{command[:60]}...`" if len(command) > 60 else f"`{command}`"
+        # Escape internal backticks to prevent markdown conflicts
+        command_safe = command.replace('`', "'")
+        if len(command_safe) > 60:
+            return f"`{command_safe[:60]}...`"
+        return f"`{command_safe}`"
 
     elif tool_name in ["Glob", "Grep"]:
         pattern = params.get("pattern", "")
@@ -69,8 +110,8 @@ def _format_tool_params(tool_name: str, params: dict) -> str:
         prompt = params.get("prompt", "")
         subagent_type = params.get("subagent_type", "")
         if subagent_type:
-            return f"{subagent_type}: {prompt[:40]}..."
-        return prompt[:50] + "..." if len(prompt) > 50 else prompt
+            return f"{subagent_type}: {_safe_truncate_markdown(prompt, 40)}"
+        return _safe_truncate_markdown(prompt, 50)
 
     # Default: show first few params
     preview_params = []
@@ -183,12 +224,9 @@ async def _format_progress_update(update_obj, tracker=None) -> Optional[str]:
 
     elif update_obj.type == "assistant" and update_obj.content:
         # Regular content updates with preview
-        content_preview = (
-            update_obj.content[:150] + "..."
-            if len(update_obj.content) > 150
-            else update_obj.content
-        )
-        return f"🤖 **Claude is working...**\n\n_{content_preview}_"
+        content_preview = _safe_truncate_markdown(update_obj.content, 150)
+        # Don't wrap in underscores - can conflict with content's markdown
+        return f"🤖 **Claude is working...**\n\n{content_preview}"
 
     elif update_obj.type == "system":
         # System initialization or other system messages
