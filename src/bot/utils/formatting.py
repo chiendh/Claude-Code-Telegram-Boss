@@ -533,6 +533,10 @@ class ResponseFormatter:
 
     def _split_message(self, text: str) -> List[FormattedMessage]:
         """Split long messages while preserving formatting."""
+        # Return empty list for empty/whitespace-only text to trigger fallback
+        if not text or not text.strip():
+            return []
+
         if len(text) <= self.max_message_length:
             return [FormattedMessage(text)]
 
