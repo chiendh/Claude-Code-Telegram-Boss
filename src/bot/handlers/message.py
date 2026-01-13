@@ -327,12 +327,17 @@ async def handle_text_message(
 
         tool_tracker = ToolExecutionTracker()
 
+        # Track last progress text to avoid duplicate edits
+        last_progress_text = None
+
         # Enhanced stream updates handler with progress tracking
         async def stream_handler(update_obj):
+            nonlocal last_progress_text
             try:
                 progress_text = await _format_progress_update(update_obj, tracker=tool_tracker)
-                if progress_text:
+                if progress_text and progress_text != last_progress_text:
                     await progress_msg.edit_text(progress_text, parse_mode="Markdown")
+                    last_progress_text = progress_text
             except Exception as e:
                 logger.warning("Failed to update progress message", error=str(e))
 
@@ -500,8 +505,11 @@ async def handle_text_message(
         # Clean up progress message if it exists
         try:
             await progress_msg.delete()
-        except:
-            pass
+        except Exception as delete_err:
+            logger.debug(
+                "Failed to delete progress message",
+                extra={"error": str(delete_err), "message_id": getattr(progress_msg, 'message_id', None)}
+            )
 
         error_msg = f"❌ **Error processing message**\n\n{str(e)}"
         await update.message.reply_text(error_msg, parse_mode="Markdown")
@@ -515,7 +523,10 @@ async def handle_text_message(
                 success=False,
             )
 
-        logger.error("Error processing text message", error=str(e), user_id=user_id)
+        logger.exception(
+            "Error processing text message",
+            extra={"user_id": user_id, "error_type": type(e).__name__}
+        )
 
 
 async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -728,8 +739,16 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     except Exception as e:
         try:
             await progress_msg.delete()
-        except:
-            pass
+        except Exception as delete_err:
+            logger.debug(
+                "Failed to delete progress message",
+                extra={"error": str(delete_err), "message_id": getattr(progress_msg, 'message_id', None)}
+            )
+
+        logger.exception(
+            "Error processing file upload",
+            extra={"user_id": user_id, "error_type": type(e).__name__, "filename": document.file_name}
+        )
 
         error_msg = f"❌ **Error processing file**\n\n{str(e)}"
         await update.message.reply_text(error_msg, parse_mode="Markdown")
