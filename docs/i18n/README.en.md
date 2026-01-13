@@ -17,16 +17,16 @@
 
 ---
 
-### 🌍 Choose Your Language / Chọn ngôn ngữ / 言語を選択 / 选择语言
+### 🌍 Languages / Ngôn ngữ / 言語 / 语言
 
-[![English](https://img.shields.io/badge/🇬🇧_English-4A90E2?style=for-the-badge)](docs/i18n/README.en.md)
-[![Vietnamese](https://img.shields.io/badge/🇻🇳_Tiếng_Việt-DA251D?style=for-the-badge)](docs/i18n/README.vi.md)
-[![Chinese](https://img.shields.io/badge/🇨🇳_简体中文-DE2910?style=for-the-badge)](docs/i18n/README.zh.md)
-[![Japanese](https://img.shields.io/badge/🇯🇵_日本語-BC002D?style=for-the-badge)](docs/i18n/README.ja.md)
-[![Korean](https://img.shields.io/badge/🇰🇷_한국어-0047A0?style=for-the-badge)](docs/i18n/README.ko.md)
-[![French](https://img.shields.io/badge/🇫🇷_Français-0055A4?style=for-the-badge)](docs/i18n/README.fr.md)
-[![Spanish](https://img.shields.io/badge/🇪🇸_Español-AA151B?style=for-the-badge)](docs/i18n/README.es.md)
-[![German](https://img.shields.io/badge/🇩🇪_Deutsch-000000?style=for-the-badge)](docs/i18n/README.de.md)
+[![English](https://img.shields.io/badge/English-0075FF?style=flat-square)](README.en.md)
+[![Vietnamese](https://img.shields.io/badge/Tiếng_Việt-FF0000?style=flat-square)](README.vi.md)
+[![Chinese](https://img.shields.io/badge/简体中文-FF0000?style=flat-square)](README.zh.md)
+[![Japanese](https://img.shields.io/badge/日本語-FF0000?style=flat-square)](README.ja.md)
+[![Korean](https://img.shields.io/badge/한국어-FF0000?style=flat-square)](README.ko.md)
+[![French](https://img.shields.io/badge/Français-FF0000?style=flat-square)](README.fr.md)
+[![Spanish](https://img.shields.io/badge/Español-FF0000?style=flat-square)](README.es.md)
+[![German](https://img.shields.io/badge/Deutsch-FF0000?style=flat-square)](README.de.md)
 
 ---
 
@@ -34,7 +34,7 @@
 
 </div>
 
-![Claude Code Telegram Boss](docs/ScreenShot.jpeg)
+![Claude Code Telegram Boss](../ScreenShot.jpeg)
 
 ---
 
@@ -78,10 +78,10 @@ cp .env.example .env
 
 Detailed documentation is available in the `docs/` folder:
 
-- [📝 Project Overview & PDR](docs/project-overview-pdr.md) - Project overview and requirements.
-- [🏗️ System Architecture](docs/system-architecture.md) - System architecture details.
-- [💻 Codebase Summary](docs/codebase-summary.md) - Code structure for developers.
-- [📏 Code Standards](docs/code-standards.md) - Coding standards and workflows.
+- [📝 Project Overview & PDR](../project-overview-pdr.md) - Project overview and requirements.
+- [🏗️ System Architecture](../system-architecture.md) - System architecture details.
+- [💻 Codebase Summary](../codebase-summary.md) - Code structure for developers.
+- [📏 Code Standards](../code-standards.md) - Coding standards and workflows.
 
 ## 🎮 User Guide
 
