@@ -280,7 +280,7 @@ class ResponseFormatter:
 
         # Ensure we have at least one message
         if not messages:
-            messages = ["_(No content to display)_"]
+            messages = ["_✅ Operation completed._"]
 
         return messages
 

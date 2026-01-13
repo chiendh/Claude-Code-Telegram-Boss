@@ -151,6 +151,36 @@ class ClaudeSDKManager:
         else:
             logger.info("No API key provided, using existing Claude CLI authentication")
 
+    def _generate_tool_summary(self, tools_used: List[Dict[str, Any]]) -> str:
+        """Generate user-friendly summary of tool activity.
+
+        Args:
+            tools_used: List of tools with name and timestamp
+
+        Returns:
+            Formatted summary string
+        """
+        if not tools_used:
+            return ""
+
+        # Group tools by name and count occurrences
+        tool_counts = {}
+        for tool in tools_used:
+            name = tool.get("name", "Unknown")
+            # Sanitize: allow only alphanumeric + underscore for safety
+            safe_name = "".join(c for c in name if c.isalnum() or c == "_") or "Unknown"
+            tool_counts[safe_name] = tool_counts.get(safe_name, 0) + 1
+
+        # Format summary
+        tool_parts = []
+        for name, count in tool_counts.items():
+            if count > 1:
+                tool_parts.append(f"{name} (x{count})")
+            else:
+                tool_parts.append(name)
+
+        return f"✅ Completed: {', '.join(tool_parts)}"
+
     async def execute_command(
         self,
         prompt: str,
@@ -208,8 +238,35 @@ class ClaudeSDKManager:
             # Update session
             self._update_session(final_session_id, messages)
 
+            # Extract content
+            content = self._extract_content_from_messages(messages)
+
+            # Generate summary if content empty but tools were used
+            if (not content or not content.strip()) and tools_used:
+                content = self._generate_tool_summary(tools_used)
+                logger.debug(
+                    "Generated tool summary for empty SDK content",
+                    summary=content,
+                    tools_count=len(tools_used),
+                )
+            elif not content or not content.strip():
+                logger.debug("Empty SDK content with no tools")
+                content = "✅ Command executed successfully."
+
+            # DEBUG: Log empty content detection
+            original_content = self._extract_content_from_messages(messages)
+            if not original_content or not original_content.strip():
+                logger.debug(
+                    "Empty SDK result content detected",
+                    tools_used_count=len(tools_used),
+                    tool_names=[t.get("name") for t in tools_used],
+                    message_count=len(messages),
+                    session_id=final_session_id,
+                    generated_content=content,
+                )
+
             return ClaudeResponse(
-                content=self._extract_content_from_messages(messages),
+                content=content,
                 session_id=final_session_id,
                 cost=cost,
                 duration_ms=duration_ms,

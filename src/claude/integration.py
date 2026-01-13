@@ -516,6 +516,36 @@ class ClaudeProcessManager:
         required_fields = ["type"]
         return all(field in msg for field in required_fields)
 
+    def _generate_tool_summary(self, tools_used: List[Dict[str, Any]]) -> str:
+        """Generate user-friendly summary of tool activity.
+
+        Args:
+            tools_used: List of tools with name and timestamp
+
+        Returns:
+            Formatted summary string
+        """
+        if not tools_used:
+            return ""
+
+        # Group tools by name and count occurrences
+        tool_counts = {}
+        for tool in tools_used:
+            name = tool.get("name", "Unknown")
+            # Sanitize: allow only alphanumeric + underscore for safety
+            safe_name = "".join(c for c in name if c.isalnum() or c == "_") or "Unknown"
+            tool_counts[safe_name] = tool_counts.get(safe_name, 0) + 1
+
+        # Format summary
+        tool_parts = []
+        for name, count in tool_counts.items():
+            if count > 1:
+                tool_parts.append(f"{name} (x{count})")
+            else:
+                tool_parts.append(name)
+
+        return f"✅ Completed: {', '.join(tool_parts)}"
+
     def _parse_result(self, result: Dict, messages: List[Dict]) -> ClaudeResponse:
         """Parse final result message."""
         # Extract tools used from messages
@@ -532,8 +562,34 @@ class ClaudeProcessManager:
                             }
                         )
 
+        content = result.get("result", "")
+
+        # Generate summary if content empty but tools were used
+        if (not content or not content.strip()) and tools_used:
+            content = self._generate_tool_summary(tools_used)
+            logger.debug(
+                "Generated tool summary for empty content",
+                summary=content,
+                tools_count=len(tools_used),
+            )
+        elif not content or not content.strip():
+            # No content and no tools - generic success
+            logger.debug("Empty content with no tools, using generic success")
+            content = "✅ Command executed successfully."
+
+        # DEBUG: Log empty content detection
+        if not result.get("result", "") or not result.get("result", "").strip():
+            logger.debug(
+                "Empty result content detected",
+                tools_used_count=len(tools_used),
+                tool_names=[t["name"] for t in tools_used],
+                num_turns=result.get("num_turns", 0),
+                session_id=result.get("session_id", ""),
+                generated_content=content,
+            )
+
         return ClaudeResponse(
-            content=result.get("result", ""),
+            content=content,
             session_id=result.get("session_id", ""),
             cost=result.get("cost_usd", 0.0),
             duration_ms=result.get("duration_ms", 0),

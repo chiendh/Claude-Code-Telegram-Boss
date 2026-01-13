@@ -59,7 +59,11 @@ class ResponseFormatter:
         if messages and self.settings.enable_quick_actions:
             messages[-1].reply_markup = self._get_contextual_keyboard(context)
 
-        return messages if messages else [FormattedMessage("_(No content to display)_")]
+        # Fallback if no messages generated
+        if not messages:
+            logger.debug("ResponseFormatter received empty content after formatting")
+
+        return messages if messages else [FormattedMessage("_✅ Operation completed._")]
 
     def _apply_syntax_highlighting(self, text: str) -> str:
         """Apply syntax highlighting to code blocks."""
