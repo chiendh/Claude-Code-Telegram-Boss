@@ -77,8 +77,12 @@ async def handle_callback_query(
                 "An error occurred while processing your request.\n"
                 "Please try again or use text commands."
             )
-        except Exception:
+        except Exception as fallback_err:
             # If we can't edit the message, send a new one
+            logger.debug(
+                "Failed to edit error message, using reply instead",
+                extra={"error": str(fallback_err)}
+            )
             await query.message.reply_text(
                 "❌ **Error Processing Action**\n\n"
                 "An error occurred while processing your request."
