@@ -170,6 +170,17 @@ class Settings(BaseSettings):
         """Parse comma-separated user IDs."""
         if isinstance(v, str):
             return [int(uid.strip()) for uid in v.split(",") if uid.strip()]
+        if isinstance(v, int):
+            # Handle single integer (pydantic-settings may auto-coerce numeric strings)
+            return [v]
+        return v  # type: ignore[no-any-return]
+
+    @field_validator("claude_allowed_tools", "claude_disallowed_tools", mode="before")
+    @classmethod
+    def parse_tool_lists(cls, v: Any) -> Optional[List[str]]:
+        """Parse comma-separated tool names."""
+        if isinstance(v, str):
+            return [tool.strip() for tool in v.split(",") if tool.strip()]
         return v  # type: ignore[no-any-return]
 
     @field_validator("approved_directory")
